@@ -41,7 +41,11 @@ SOBEL format:
 """
 
 if __name__ == '__main__':
-    DS_PATH = sys.argv[1] 
+    DS_PATH = sys.argv[1]
+    if (len(sys.argv) > 2):
+        CUTOFF = float(sys.argv[2])
+    else:
+        CUTOFF = float('inf')
     lbp_path = os.path.basename(DS_PATH) + "_LBP.npy" 
     glcm_path = os.path.basename(DS_PATH) + "_GLCM.npy"
     sobel_path = os.path.basename(DS_PATH) + "_sobel.npy"
@@ -80,15 +84,15 @@ if __name__ == '__main__':
 
     ds: Dataset = Dataset(DS_PATH, config.IGNORE_DIRS)
 
-    LBP_features = np.zeros([min(len(ds), config.CUTOFF), np.prod(config.SHAPE)], dtype=np.uint8)
+    LBP_features = np.zeros([min(len(ds), CUTOFF), np.prod(config.SHAPE)], dtype=np.uint8)
 
     ## GLCM produces np.uint32 output
     ## see https://github.com/scikit-image/scikit-image/blob/main/skimage/feature/texture.py
     ## MAXL + 1 = #{0, ..., MAXL}
-    GLCM_features = np.zeros([min(len(ds), config.CUTOFF), (config.MAXL + 1) * (config.MAXL + 1) * len(config.DISTANCES) * len(config.ANGLES)], dtype=np.uint32)
+    GLCM_features = np.zeros([min(len(ds), CUTOFF), (config.MAXL + 1) * (config.MAXL + 1) * len(config.DISTANCES) * len(config.ANGLES)], dtype=np.uint32)
 
-    sobel_features = np.zeros([min(len(ds), config.CUTOFF), np.prod(config.SHAPE)], dtype=np.uint8)
-    contrast_features = np.zeros([min(len(ds), config.CUTOFF), len(config.DISTANCES) * len(config.ANGLES)])
+    sobel_features = np.zeros([min(len(ds), CUTOFF), np.prod(config.SHAPE)], dtype=np.uint8)
+    contrast_features = np.zeros([min(len(ds), CUTOFF), len(config.DISTANCES) * len(config.ANGLES)])
 
     for i, T in enumerate(transforms): 
         T_preprocessed = [
@@ -99,8 +103,8 @@ if __name__ == '__main__':
             skimage.util.img_as_ubyte, ## sobel filter transforms image to float
             lambda a: np.reshape(a, [np.prod(a.shape)]), ## flatten (total)
         ]
-        for j, res in enumerate(tqdm(ds.lazy_apply(T_preprocessed, as_float=False), total=min(len(ds), config.CUTOFF))):
-            if (j >= config.CUTOFF): break
+        for j, res in enumerate(tqdm(ds.lazy_apply(T_preprocessed, as_float=False), total=min(len(ds), CUTOFF))):
+            if (j >= CUTOFF): break
             if (i == 0):
                 LBP_features[j, :] = res
             elif (i == 1):
@@ -108,7 +112,7 @@ if __name__ == '__main__':
             elif (i == 2):
                 sobel_features[j, :] = res
 
-    for j in tqdm(range(min(len(ds), config.CUTOFF))):
+    for j in tqdm(range(min(len(ds), CUTOFF))):
         contrast_row_j = skimage.feature.graycoprops(GLCM_features[j, :].reshape(config.MAXL + 1, config.MAXL + 1, len(config.DISTANCES), len(config.ANGLES)), prop="contrast")
         contrast_features[j, :] = contrast_row_j.reshape(len(config.DISTANCES) * len(config.ANGLES))
 

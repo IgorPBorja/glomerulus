@@ -14,7 +14,7 @@ sigma = 5.0
 truncate = 4.0
 gammas = [0.1, 0.6, 2.5]
 consts = [1.0, 1.0, 1.0]
-hist_bins = [4, 256]
+hist_bins = 256
 ksize = 3
 laplace_const = 10.0
 allowed_extensions = [".jpg", ".png", ".jpeg", ".JPG"]
@@ -69,14 +69,12 @@ def init_transforms(dataset_path) -> list:
             lambda float_img: apply_laplace_filter_channelwise(float_img, ksize=ksize), 
             f"Laplace operator with kernel K of size 3"
          ),
-        *[
-            (
+        (
                 "hist",
-                dataset_path + f"_hist_equalize{n+1}",
-                lambda float_img: apply_hist_equalize_channelwise(float_img, nbins=hist_bins[n]),
-                f"Histogram equalization with {hist_bins[n]} disjoint, equal-sized bins"
-                ) for n in range(len(hist_bins))
-        ] 
+                dataset_path + f"_hist",
+                lambda float_img: apply_hist_equalize_channelwise(float_img, nbins=hist_bins),
+                f"Histogram equalization with {hist_bins} disjoint, equal-sized bins"
+        ) 
     ]
     return img_transforms
 
