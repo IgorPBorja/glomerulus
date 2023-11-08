@@ -1,5 +1,5 @@
-code="/home/igor/4o-SEMESTRE/IC0009/pratica2/code"
-inv_imgs="/home/igor/4o-SEMESTRE/IC0009/pratica2/invariance-imgs"
+code="/path/to/workspace/folder"
+inv_imgs="/path/to/save/folder"
 
 img=("" "treino_azan (45).jpg" "treino_he (2).jpg" "treino_picro (13).jpg")
 
